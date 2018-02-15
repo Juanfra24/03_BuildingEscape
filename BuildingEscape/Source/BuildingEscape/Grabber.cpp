@@ -5,6 +5,7 @@
 #include "Gameframework/Actor.h"
 #include "Engine/World.h"
 #include "Math/Vector.h"
+#include "DrawDebugHelpers.h"
 
 #define OUT
 
@@ -36,6 +37,20 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Posicion,OUT Rotacion);
+
+	FVector LineTraceEnd = Posicion + Rotacion.Vector() * Reach;
+
+	DrawDebugLine(
+		GetWorld(),
+		Posicion,
+		LineTraceEnd,
+		FColor(255,0,0),
+		false,
+		0.f,
+		0.f,
+		15.f
+	);
+
 
 	UE_LOG(LogTemp, Warning, TEXT("Position: %s /// Rotation: %s"), *Posicion.ToString(), *Rotacion.ToString());
 }

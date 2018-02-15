@@ -29,5 +29,6 @@ private:
 
 	FVector Posicion;
 	FRotator Rotacion;
+	float Reach = 100.f;
 	
 };
