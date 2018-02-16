@@ -6,6 +6,7 @@
 #include "Engine/World.h"
 #include "Math/Vector.h"
 #include "DrawDebugHelpers.h"
+#include "Components/PrimitiveComponent.h"
 
 
 #define OUT
@@ -62,6 +63,64 @@ void UGrabber::SetupInputComponent()
 
 }
 
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Pressed"));
+	auto HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+	auto ActorHit = HitResult.GetActor();
+	if (ActorHit)
+	{
+		PhysucsHandle->GrabComponent(
+			ComponentToGrab,
+			NAME_None,
+			ComponentToGrab->GetOwner()->GetActorLocation(),
+			true///allow rotation
+
+		);
+	}
+}
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Released"));
+	PhysucsHandle->ReleaseComponent();
+}
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Posicion, OUT Rotacion);
+	///Crea variable line trace end
+	FVector LineTraceEnd = Posicion + Rotacion.Vector() * Reach;
+
+	/// Setup query parameters
+	FCollisionQueryParams TraceParam(FName(TEXT("")), false, GetOwner());
+
+
+	FHitResult Hit;
+
+	///Tal como el getter/setter de la posicion, este devuelve un fhitreult
+	GetWorld()->LineTraceSingleByObjectType(
+		OUT Hit,
+		Posicion,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParam
+	);
+
+
+
+
+	if (PhysucsHandle->GrabbedComponent)
+	{	
+		PhysucsHandle->SetTargetLocation(LineTraceEnd);
+	}
+
+
+}
+
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 {
 	///Le asigna valores a los parametros posicion y rotacion settter/ getter
@@ -90,26 +149,6 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 	}
 
 
-	return FHitResult();
+	return Hit;
 }
-
-void UGrabber::Grab()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Pressed"));
-	GetFirstPhysicsBodyInReach();
-}
-void UGrabber::Release()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Released"));
-}
-
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-
-}
-
-
 
