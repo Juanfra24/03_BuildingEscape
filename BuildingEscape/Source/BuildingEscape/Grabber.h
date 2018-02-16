@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/InputComponent.h"
 #include "Grabber.generated.h"
 
 
@@ -32,5 +33,13 @@ private:
 	FRotator Rotacion;
 	float Reach = 100.f;
 	UPhysicsHandleComponent* PhysucsHandle = nullptr;
+	UInputComponent* InputComponent = nullptr;
+	void Grab();
+	void Release();
+
+	void FindPhysicsComponents();
+	void SetupInputComponent();
+
+	const FHitResult GetFirstPhysicsBodyInReach ();
 	
 };

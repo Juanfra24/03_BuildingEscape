@@ -7,6 +7,7 @@
 #include "Math/Vector.h"
 #include "DrawDebugHelpers.h"
 
+
 #define OUT
 
 
@@ -26,44 +27,55 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FindPhysicsComponents();
+	SetupInputComponent();
+}
+
+void UGrabber::FindPhysicsComponents()
+{
 	PhysucsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 
 	if (PhysucsHandle)
 	{
-		
+
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s missin physics handle component"), *GetOwner()->GetName())
 	}
-	
 }
 
-
-// Called every frame
-void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UGrabber::SetupInputComponent()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Posicion,OUT Rotacion);
+	if (InputComponent)
+	{
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s missing input handle component"), *GetOwner()->GetName())
+	}
+
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
+	///Le asigna valores a los parametros posicion y rotacion settter/ getter
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Posicion, OUT Rotacion);
+	///Crea variable line trace end
 	FVector LineTraceEnd = Posicion + Rotacion.Vector() * Reach;
-
-	DrawDebugLine(
-		GetWorld(),
-		Posicion,
-		LineTraceEnd,
-		FColor(255,0,0),
-		false,
-		0.f,
-		0.f,
-		15.f
-	);
 
 	/// Setup query parameters
 	FCollisionQueryParams TraceParam(FName(TEXT("")), false, GetOwner());
 
 
 	FHitResult Hit;
+
+	///Tal como el getter/setter de la posicion, este devuelve un fhitreult
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
 		Posicion,
@@ -74,8 +86,30 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	AActor* ActorHit = Hit.GetActor();
 	if (ActorHit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"),*ActorHit->GetName())
+		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *ActorHit->GetName())
 	}
-	///UE_LOG(LogTemp, Warning, TEXT("Position: %s /// Rotation: %s"), *Posicion.ToString(), *Rotacion.ToString());
+
+
+	return FHitResult();
 }
+
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Pressed"));
+	GetFirstPhysicsBodyInReach();
+}
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Released"));
+}
+
+// Called every frame
+void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+
+}
+
+
 
