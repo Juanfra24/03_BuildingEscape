@@ -8,6 +8,8 @@
 	
 #include "OpenDoor.generated.h" //LAST INCLUDE
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpenRequest);
+
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -33,6 +35,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnOpenRequest OpenRequest;
 private:
 	UPROPERTY(EditAnywhere)
 	float OpenAngle = -10.0f;
